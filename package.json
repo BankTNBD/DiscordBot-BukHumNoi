@@ -1,0 +1,15 @@
+{
+  "name": "discordbot",
+  "version": "0.0.1",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "upload": "node upload.js",
+    "start": "node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.6.0"
+  }
+}
