@@ -1,7 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client,Events, Collection, GatewayIntentBits } = require('discord.js');
-const { token } = require('./config.json');
+const mcs = require('node-mcstatus');
+const schedule = require('node-schedule');
+const { Client, Events, Collection, GatewayIntentBits, ActivityType } = require('discord.js');
+
+const { token, mc } = require('./config.json');
+let players = {};
 
 process.env.TZ = 'Asia/Bangkok'
 
@@ -32,19 +36,28 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 
 		try {
-			await interaction.deferReply({ephemeral:true});
+			//await interaction.deferReply({ephemeral:true});
 			await command.execute(interaction);
 		} catch (error) {
 			console.error(error);
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
-	} 
-	if (interaction.isSelectMenu()) {
-
-		const selected = interaction.values.join(', ');
-
-		await interaction.update(`The user selected ${selected}!`);
 	}
 });
 
 client.login(token);
+
+const job = schedule.scheduleJob('*/1 * * * *', function(){
+	mcs.statusJava(mc.host, mc.port, mc.options)
+    .then((result) => {
+	   players = result.players;
+	   client.user.setPresence({ 
+		activities: [{ 
+			name: `${players.online}/${players.max} players`, 
+			type: ActivityType.Playing
+		}], 
+		status: 'online' 
+	});
+    })
+    .catch((error) => {})
+});
